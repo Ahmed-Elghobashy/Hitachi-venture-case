@@ -81,6 +81,8 @@ def main() -> int:
         company = enrich_round(company, enrichment_map)
         enriched.append(company)
 
+    protfolio_csv_exporter(enriched, "all_companies_enriched.csv")
+
     if no_filter:
         relevant = enriched
     else:

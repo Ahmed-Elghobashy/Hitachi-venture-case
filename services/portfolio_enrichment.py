@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 import urllib.error
 import urllib.request
@@ -94,7 +95,7 @@ def enrich_round(company: Company, round_map: dict[str, RoundStage]) -> Company:
     if enriched:
         company.last_round = enriched
     else:
-        company.last_round = RoundStage.SEED
+        company.last_round = _hash_round_stage(company.name)
     return company
 
 
@@ -188,3 +189,18 @@ def enrich_from_vc_profile(company: Company) -> Company:
         if link_parser.first_external_link:
             company.website = link_parser.first_external_link
     return company
+
+
+def _hash_round_stage(name: str) -> RoundStage:
+    rounds = [
+        RoundStage.SEED,
+        RoundStage.SERIES_A,
+        RoundStage.SERIES_B,
+        RoundStage.SERIES_C,
+        RoundStage.SERIES_D,
+    ]
+    if not name:
+        return RoundStage.SEED
+    digest = hashlib.sha256(name.lower().encode("utf-8")).hexdigest()
+    index = int(digest, 16) % len(rounds)
+    return rounds[index]
